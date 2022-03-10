@@ -4,6 +4,9 @@ import java.net.URI;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,8 +25,13 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 class PagamentoController {
 
+	private static final Logger LOG = LoggerFactory.getLogger(PagamentoController.class);
+	
 	private PagamentoRepository pagamentoRepo;
-	private ClienteRestDoPedido pedidoCliente;
+//	private ClienteRestDoPedido pedidoCliente;
+	
+	@Autowired
+	private EatsMonolitoClient eatsMonolitoClient;
 
 	@GetMapping
 	ResponseEntity<List<PagamentoDto>> lista() {
@@ -50,10 +58,19 @@ class PagamentoController {
 
 	@PutMapping("/{id}")
 	PagamentoDto confirma(@PathVariable("id") Long id) {
+		
+		LOG.info("INICIO - CONFIRMAÇÃO PAGAMENTO ID-{}", id);
+		
 		Pagamento pagamento = pagamentoRepo.findById(id).orElseThrow(ResourceNotFoundException::new);
 		pagamento.setStatus(Pagamento.Status.CONFIRMADO);
-		pedidoCliente.notificaPagamentoDoPedido(pagamento.getPedidoId());
+//		pedidoCliente.notificaPagamentoDoPedido(pagamento.getPedidoId());
+
+		
+		PedidoMudancaDeStatusRequest pedidoPago = new PedidoMudancaDeStatusRequest("PAGO");
+		eatsMonolitoClient.atualizaStatusDoPedido(pagamento.getPedidoId(), pedidoPago);
+		
 		pagamentoRepo.save(pagamento);
+		LOG.info("FINALIZADO COM SUCESSO - CONFIRMAÇÃO PAGAMENTO ID-{}", id);
 		return new PagamentoDto(pagamento);
 	}
 
