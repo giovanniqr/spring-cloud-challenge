@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: 'eats-pagamento-service'
+  profiles:
+    active: default
+  cloud:
+    config:
+      uri: http://localhost:8888 
+
+    
+
+
+
+

@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: 'eats-distancia-service'
+  profiles:
+    active: default
+  cloud:
+    config:
+      uri: http://localhost:8888 
+
+    
+
+
+
+
